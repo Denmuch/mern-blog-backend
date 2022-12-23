@@ -1,27 +1,32 @@
 import express from "express";
-import mongoose from "mongoose";
+import fs from 'fs';
 import multer from "multer";
 import cors from "cors";
+
+import mongoose from "mongoose";
 
 import { registerValidation, loginValidation, postCreateValidation } from "./validation.js ";
 import { handleValidationErrors, checkAuth } from "./utils/index.js"
 import { UserController, PostController } from "./controllers/index.js"
 
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+    .connect(process.env.MONGODB_URI)
     .then(() => console.log("DB ok"))
     .catch((err) => console.log("DB error", err))
-    .finally(() => console.log("Finally"))
 
 const app = express();
 
 const storage = multer.diskStorage({
-    destination: (_, file, cb) => {
-        cb(null, "uploads");
-    },
-    filename: (_, file, cb) => {
-        cb(null, file.originalname);
-    },
+  destination: (_, __, cb) => {
+    if (!fs.existsSync('uploads')) {
+      fs.mkdirSync('uploads');
+    }
+    cb(null, 'uploads');
+  },
+  filename: (_, file, cb) => {
+    cb(null, file.originalname);
+  },
 });
 
 const upload = multer({ storage });
